@@ -1,0 +1,1631 @@
+<!-- ASSIGNMENT #4 - BY: Charles Byrne (Student Number: 97700266)
+  FOR CS230[A] - Web Information Processing
+  5th April 2021 -
+  - Tested on: - Chrome and Firefox, Edge and Vivaldi 3.6 in Windows 10, XAMPP 
+
+  - Back end - PHP - MARIADB
+
+-->
+
+<HTML>
+<head>
+  <meta charset="UTF-8">
+    <style>
+            body {  
+      user-select: none;              /* Avoid text being selected (and anoyingly hilighted) on double click */
+      -webkit-user-select: none;      /* Various browsers: Safari,Firefox, Edge/IE10 */
+      -moz-user-select: none;
+      -ms-user-select: none;
+      font-family: sans-serif;
+      font-size: 20px;
+
+    }
+
+    .menuItem {
+  background-color: white;
+      font-size: 14px;
+      padding: 5;
+      cursor: pointer;
+    }
+
+.menuItem_disabled {
+  background-color: white;
+  color: #a3a3a3;
+      font-size: 14px;
+      padding: 5;
+
+    }
+
+.titleField {
+  background-color: gray;
+  color: blue;
+}
+
+.titleField_selected {
+  background-color: black;
+  color: white;
+}
+
+    .menuItem:hover {
+      background-color: rgb(199, 197, 197);
+    } 
+
+    .ib {
+  position: absolute;
+  background-color: white;
+  border: 2px solid lightblue;
+  color:blue;
+  overflow:hidden;
+}
+[contenteditable] {
+  outline: 0px solid transparent;
+}
+
+   .flexiTable > tbody > tr:nth-child(even) {
+      background-color: #dfdfdf;
+  }
+
+  .flexiTable > tbody > tr:nth-child(odd) {
+      background-color: none;
+  }
+
+  .topBar {
+    background-color: #0162b1;
+    color: white;
+    padding: 10px;
+    font-size: 20px;
+  }
+
+  .tr_sm {
+    font-size: 12px;
+  }
+
+  .addressTable {
+    border-collapse: collapse;
+    width: 100%;
+  border: none;
+  border-spacing: 0px;
+  padding: 0px;
+  font-size: 10px;
+}
+
+.sabToggle {
+    border-collapse: collapse;
+    width: 100%;
+  border: none;
+  border-spacing: 0px;
+  padding: 0px;
+  width: 33%;
+  font-size: 8px;
+}
+
+.addressTable tbody {
+  border: none;
+
+}
+.neatText {
+  font-size: 12px;
+}
+
+.addressTable td, .addressTable th, .addressTable tr {
+  border-collapse:separate;
+  padding: none;
+  background-color: none;
+}
+
+
+
+.overRide {
+  border:none;
+  padding: none;
+}
+
+  .adr_lab {
+    background-color: #cfebf5;
+  }
+  .adr_lab:hover {
+    background-color: #88c7fb;
+    color: white;
+  }
+
+  .flexiTable th {
+    border-collapse: collapse;
+  text-align: left;
+  background-color: #0162b1;
+  color: white;
+  font-weight: bold;
+}
+
+.popUp {
+    position:absolute; top: 380; left:240;
+  background-color: white;
+  border: 2px solid black;
+  display: none;
+  padding: 4px;
+}
+
+.flexiTable {
+    width: 100%;
+  border: 1px solid black;
+  border-spacing: 0px;
+  padding: 0px;
+}
+
+.flexiTable td:not([colspan='7']), .flexiTable th:not([colspan='7']) {
+  border: 1px solid black;
+  padding: 8px;
+}
+
+td[colspan='7'] {
+  border: 1px solid black;
+  padding: 3px;
+}
+
+.flexiTable2 > thead, 
+.flexiTable2 > thead > tr > th, 
+.flexiTable2 > tbody, 
+.flexiTable2 > tbody > tr > td {
+  border: 1px solid black;
+  padding: 8px;
+}
+
+.t0 {
+  background-color: none;
+  color: black;
+}
+.t1 {
+  background-color: lightblue;
+  color: black;
+}
+.t2 {
+  background-color: #0162b1;
+  color: white;
+}
+.t3 {
+  font-size:smaller;
+  background-color: yellow;
+  color: black;
+}
+.t4 {
+  font-size:smaller;
+  background-color: #c8aa23;
+  color: black;
+}
+.t5 {
+  font-size:smaller;
+  background-color: #574805;
+  color: white;
+}
+.t6 {
+  background-color: red;
+  color: white;
+}
+.t7 {
+  background-color: #a31111;
+  color: white;
+}
+.t8 {
+  background-color: #580202;
+  color: white;
+}
+.t9 {
+  background-color: #0162b1;
+  color: white;
+  font-weight: bold;
+}
+.t10 {
+  font-weight: bold;
+  background-color: #a3a3a3;
+}
+
+
+.t1_sel {
+  background-color: lightblue;
+  color: black;
+}
+
+    </style>
+<script>
+
+// ########################         GLOBAL VARIABLES :
+
+var tableData = [];
+var alignText = ['','text-align: left; ', 'text-align: center; ','text-align: right; '];
+var defaultRow = {'customerID':'-', 'Title': '-', 'Firstnames': '-', 'Surname': '-',
+                  'Mobile': '-','Email': '-', 'Address': []};
+var placeHolder = ['','[Enter Title]','[Enter First Name]','[Enter Surname]','[Enter Mobile]','[Enter Email]'];
+var ilst =  "style=\"border:none; padding: 0px;\"";
+var addressTypes = [' ', 'S&B','S','B'];
+var ilst2 =  "style=\"padding: 0 3 0 3;\"";
+var sbForm = {sabID:-1,sID:-1,bID:-1,stCurRecBefore:0,stCurRecNow:0,curID:-1};
+var addressDeleteData = {id:-1,val:-1,xtra:-1};
+var numCols = 6;
+var selectedRow = -1;
+var selectedCol = -1;
+var currentEdit = [];
+var doRefresh;
+var editingCell = false;
+var addrToggles = [];
+var curWaitForID = -1;
+var searchTerms = {column:'', word:''};
+var lastEvent;
+var title = {editing: false, other: false, val:0};
+var titleList = ['[Enter Title]','Mx','Ms','Mr','Mrs','Miss','Dr','Other'];
+var inDialogueBox = false;
+
+// ########################         GLOBAL VARIABLES :
+
+const UP = 0;
+    const DOWN = 1;
+    const LEFT = 3;
+    const RIGHT = 4;
+
+
+function goDel(customerID) {                 // SENDS THE DELETE COMMAND TO THE BACK-END
+    goCrud('assignment-04.php?fn=7&id=' + customerID + '&',true, 0);
+}
+
+function goDel_prompt(i) {                  // ASKS THE USER IF THEY REALLY WANT TO DELETE THE RECORD
+  var rcMenuElement = document.getElementById("popUp2");
+  var tt = "<div id=\"popUp2\"><div class=\"topBar\"><span>Delete Customer Record:</span><span style=\"float:right;\"><button onclick=\"showPopup(false,2,true);\">x</button></span></div>";
+    tt += "<div>Are you sure you want to delete this customer record?</div>";
+    tt += "<div><button onclick=\"showPopup(false,2,true);\">CANCEL</button><button onclick=\"goDel("+i+");\">YES</button></div>";
+    rcMenuElement.innerHTML = tt;
+    setPos(rcMenuElement);
+    rcMenuElement.style.display = "block"; 
+
+} // END: goDel_prompt()
+
+
+function goLoadDB_prompt() {              // ASKS THE USER IF THEY WANT TO LOAD THE DATABASE FROM SQL
+                                          // THIS WOULD BE VERY DANGEROUS IN PRACTICE
+                                          // AND WOULD REQUIRE MORE SECURITY MEASURES
+  var rcMenuElement = document.getElementById("popUp2");
+  var tt = "<div id=\"popUp2\"><div class=\"topBar\"><span>Load Database from SQL:</span><span style=\"float:right;\"><button onclick=\"showPopup(false,2,true);\">x</button></span></div>";
+    tt += "<div class=\"neatText\" style=\"padding: 20px 0px 20px;\">This will overwrite the existing database. Are you sure? If so, choose a file below:</div>";
+    tt += "<div><button onclick=\"showPopup(false,2,true);\">CANCEL</button> <span><input type=\"file\" id=\"file\" name=\"file[]\" single onchange=\"loadDatabase()\"/></span></div>";
+    rcMenuElement.innerHTML = tt;
+    setPos(rcMenuElement);
+    rcMenuElement.style.display = "block";
+
+} // END: function goLoadDB_prompt()
+
+function goDropDB() {
+ // document.getElementById('statText').textContent = "Database Dropped - load another or click initialise.";
+ tableData = [];
+ goCrud('assignment-04.php?fn=drop&table=database&', true, 0);
+}
+
+function goDropDB_prompt() {        // ASKS THE USER IF THEY REALLY WANT TO DELETE THE ENTIRE DATABASE!
+  var rcMenuElement = document.getElementById("popUp2");
+  console.log(tableData.length);
+  var tt = "<div id=\"popUp2\"><div class=\"topBar\"><span>Drop the Database!</span><span style=\"float:right;\"><button onclick=\"showPopup(false,2,true);\">x</button></span></div>";
+    tt += "<div class=\"neatText\" style=\"padding: 20px 0px 20px;\">WARNING!!! This will delete the entire the database. Are you sure? </div>";
+    tt += "<div><button onclick=\"showPopup(false,2,true);\">CANCEL</button><span><button onclick=\"goDropDB();\">DROP DATABASE!</button></span></div>";
+    rcMenuElement.innerHTML = tt;
+    setPos(rcMenuElement);
+    rcMenuElement.style.display = "block"; 
+
+} // END: function goDropDB_prompt()
+
+
+function goDelAddr(addressID) {           // Deletes an address and the relation record from the Database
+  console.log("DEL ADDR: " + addressDeleteData.xtra +" == "+ addressDeleteData.id);
+    if (addressDeleteData.xtra>-1) {
+      if (addressDeleteData.xtra == addressDeleteData.id) { // if both chosen type = s&b address
+        addressDeleteData.val = 1;
+      }
+    }
+    var url = 'assignment-04.php?fn=16&id=' + addressID + '&';
+      url += 'st0='+ addressDeleteData.id + '&';
+      url += 'st1='+ addressDeleteData.val + '&';
+      url += 'st2=-1&st3=-1&';
+    console.log("ADDR: " + url);
+    goCrud(url, true, 0);
+    console.log("GODELETE: " + addressDeleteData.id + " ---- " + addressDeleteData.val);
+    showPopup(false,2,true);
+
+} // END: function goDelAddr()
+
+
+function setADD() {                          // SETS THE ADDRESS TO BE DELETED
+  var value = document.getElementById('sabAddr').value;
+  console.log("SET-ADD: " + value);
+  addressDeleteData.id=value;
+
+} //END: function setADD()
+
+
+function goDelAddr_prompt(row, addressRow) { // Verifies an address delete and asks for alternate S&B record if needed
+
+  var temp;
+  var addressCount = updateSbForm(row);
+
+  var addressID = tableData[row].Address[addressRow].addressID;
+
+  var rcMenuElement = document.getElementById("popUp2");
+  var tt = "";
+    tt += "<div class=\"neatText\" style=\"padding: 10px 0px 10px;\"><b>Are you sure you want to delete this address?</b></div>";
+    tt += "<div class=\"neatText\" style=\"padding: 10px 0px 10px;\">"+printAddress(row,addressRow)+"</div>";
+
+    // ############ 1: only 1 record:
+
+    if (addressCount==1) {
+      tt += "<div style=\"color:red; font-size: 12px; font-weight:bold; padding: 10px 0px 20px;\">Deleting this will leave the customer with no shipping or billing address!</div>";
+      addressDeleteData.id=-1;
+      addressDeleteData.val=-1;
+      addressDeleteData.xtra=-1;
+    } else {
+        // ------------------------------------------------------------
+
+      var shippingList = [];
+      var ddListLabel = "";
+        var ddList = "<select id=\"sabAddr\" onchange=\"setADD()\" name=\"sabAddr\">";
+
+        for (var i=0; i<addressCount; i++) {
+          if (i != addressRow) {
+            temp = getAddress(row,i);
+            ddList += "<option value=\""+tableData[row].Address[i].addressID+"\">"+temp+"</option>";
+            shippingList.push({id: tableData[row].Address[i].addressID, addr: temp});
+          }
+        } // for loop
+        
+        ddList += "</select>";
+        addressDeleteData.id=shippingList[0].id;
+        
+        // ------------------------------------------------------------
+
+            if (sbForm.sabID==addressID) {
+
+             // ############ 2: Deleting S&B Address:
+
+                addressDeleteData.val=1;
+                addressDeleteData.xtra=-1;
+                console.log("AC:: " + addressCount);
+
+        if (addressCount==2) {
+
+          tt += "<div class=\"neatText\"><b>The new Shipping and billing address will become:</b><br/>"+shippingList[0].addr+"</div>";  
+        } else {
+          ddListLabel = "<label for=\"sabAddr\">If so, please choose alternate SHIPPING AND BILLING address:</label>";
+          tt += "<div class=\"neatText\" style=\"padding:10px;\">"+ddListLabel+ddList+"</div>";
+        }
+
+      } else {
+
+      // ############ 3: Deleting Shipping or billing Address:
+
+      if ( sbForm.sID==addressID || sbForm.bID==addressID ) {
+          if (sbForm.sID==addressID) {
+            console.log("PROBLEM!");
+            var targetID = sbForm.bID;
+            addressDeleteData.xtra = sbForm.bID;
+            addressDeleteData.val=2;
+          } else if (sbForm.bID==addressID) {
+            var targetID = sbForm.sID;
+            addressDeleteData.xtra = sbForm.sID;
+            addressDeleteData.val=3;
+          }
+
+          console.log("->>> "+ JSON.stringify(addressDeleteData));
+
+          temp = "";
+          for (var i=0; i<addressCount; i++) {
+            if (targetID == tableData[row].Address[i].addressID) {
+              temp = getAddress(row,i);
+              break;
+            }
+          }
+          
+          if (addressCount>2) {
+            ddListLabel = "<label for=\"sabAddr\">If so, please choose alternate address:</label>";
+            tt += "<div class=\"neatText\" style=\"padding: 10px 0px 10px;\">"+ddListLabel+ddList+"</div>";
+          } else {
+            tt += "<div class=\"neatText\" style=\"padding: 10px 0px 10px;\"><b>The new Shipping and billing address will become:</b><br/>"+ temp+"</div>";
+          }
+      }
+
+      }
+    }
+
+
+    tt += "<div class=\"neatText\"><button onclick=\"showPopup(false,2,true);\">CANCEL</button><button onclick=\"goDelAddr("+addressID+");\">YES</button></div>";
+
+    tt = "<div id=\"popUp2\"><div class=\"topBar\"><span>Delete Address:</span><span style=\"float:right;\"><button onclick=\"showPopup(false,2,true);\">x</button></span></div><div style=\"padding:10px;\">" + tt + "</div>";
+    rcMenuElement.innerHTML = tt;
+    setPos(rcMenuElement);
+    rcMenuElement.style.display = "block";
+
+} // END: function goDelAddr_prompt()
+
+
+  function insertRow(position) {          // Inserts a new Row into the table
+
+    var newRow = JSON.parse(JSON.stringify(defaultRow));
+
+    if (position < 0) {
+      tableData.push(newRow);
+      position=tableData.length-1;
+    } else {
+      tableData.splice(position, 0, newRow);
+    }
+
+    printTable();
+    goCell(position,1,false);
+
+  } // END: function insertRow()
+
+
+  function goAddRec() {             // sends a record to the back-end
+
+      console.log("ADD");
+      var params = 'f0= + '+ document.getElementById("f0").value + '&';
+      params += 'f1= + '+ document.getElementById("f1").value + '&';
+      params += 'f2= + '+ document.getElementById("f2").value + '&';
+      params += 'f3= + '+ document.getElementById("f3").value + '&';
+      params += 'f4= + '+ document.getElementById("f4").value + '&';
+      var url = 'assignment-04.php?fn=8& + ' + params + '&';
+      console.log(url);
+      goCrud(url, true, 1);
+
+  } // END: function goAddRec()
+
+
+  function validateAddress(formData) {    // validates the Address form
+
+      if (formData.line1.length<1) return "'Line 1' is a required field. Please fill in line 1.";
+      if (formData.town.length<1) return "'Town' is a required field. Please fill in Town.";
+      if (formData.county.length<1) return "'County' is a required field. Please fill in County.";
+      return '';
+
+  } // END: function validateAddress()
+
+
+function goAddRec_addr(customerID) { // send our [new / changed] address data to the database
+    var formData = {line1: document.getElementById("address-line1").value,
+                    line2: document.getElementById("address-line2").value,
+                    town: document.getElementById("town").value,
+                    county: document.getElementById("county").value,
+                    eircode: document.getElementById("postal-code").value
+    };
+    var valText = validateAddress(formData);
+    if (valText!='') {
+      document.getElementById("validateMessage").innerHTML = "<div class=\"neatText\" style=\"color:red;\" id=\"validateMessage\">"+valText+"</div>";
+      return;
+    }
+    console.log("ADD");
+    var i = 0;
+    var params = 'line1='+ formData.line1 + '&';
+    params += 'line2='+ formData.line2 + '&';
+    params += 'town='+  formData.town + '&';
+    params += 'county='+ formData.county + '&';
+    params += 'eircode='+ formData.eircode + '&';
+
+    //sbForm = [S&B ID (before change), S ID, B ID, [CUR REC BEFORE CHANGE], [CUR REC NOW]]
+
+    console.log("---> goAddRec_addr ; sbForm: "+ JSON.stringify(sbForm));
+    if (sbForm.before!==sbForm.now) {
+      console.log("CHANGED");
+      var shippingTypeChange = [{id:-1, val:-1},{id:-1, val:-1}];
+      if (sbForm.now==1) { // if our record is now ship & bill 
+        console.log("THIS = S&B: "+sbForm.sabID +' vs '+ sbForm.curID);
+        if (sbForm.sabID !== sbForm.curID || sbForm.curID<0 ) {
+          if (sbForm.sabID > -1) {   // need to set this record shipping type to 0
+            console.log('need to set this record shipping type to 0'); 
+            shippingTypeChange[0].id = sbForm.sabID;
+            shippingTypeChange[0].val = 0;
+          } else {
+            if (sbForm.sID > -1 
+              && sbForm.sID !== sbForm.curID ) {   // if another rec set to shipping, set to 0
+              console.log('if another rec set to shipping, set to 0');
+              shippingTypeChange[0].id = sbForm.sID;
+              shippingTypeChange[0].val = 0;
+              i++;
+            }
+            if (sbForm.bID > -1
+              && sbForm.bID !== sbForm.curID ) {
+              // if another rec set to billing, set to 0
+              console.log('if another rec set to billing, set to 0');
+              shippingTypeChange[i].id = sbForm.bID;
+              shippingTypeChange[i].val = 0;
+            }
+
+          }
+        }
+        //    [{sabID:-1,sID:-1,bID:-1,stCurRecBefore:0,stCurRecNow:0}];
+      } else if (sbForm.now==2) { // if our record is now shipping 
+        console.log("SHIP");
+
+        if (sbForm.sabID >-1 
+          && sbForm.sabID!==sbForm.curID) {  
+           // need to set this record shipping type to 3, billing 
+          shippingTypeChange[0].id  = sbForm.sabID;
+          shippingTypeChange[0].val  = 3; // 3 = billing
+        } else if (sbForm.sID>-1 
+                    && sbForm.sID!==sbForm.curID) { 
+          // if another rec set to shipping, set to 0
+               shippingTypeChange[0].id  = sbForm.sID;
+               shippingTypeChange[0].val  = 0;               
+        }
+      } else if (sbForm.now==3) { // if our record is now billing 
+        console.log("BILL");
+
+        if (sbForm.sabID>-1
+           && sbForm.sabID!==sbForm.curID) {
+             // need to set this record shipping type to 2, shipping 
+          shippingTypeChange[0].id  = sbForm.sabID;
+          shippingTypeChange[0].val  = 2; // 2 = shipping          
+        } else if (sbForm.bID>-1 
+            && sbForm.bID!==sbForm.curID ) {
+              // if another rec set to billing, set to 0
+               shippingTypeChange[0].id  = sbForm.bID;
+               shippingTypeChange[0].val  = 0;
+        }
+      }
+      console.log("CHANGED");
+      params += 'st0='+ shippingTypeChange[0].id + '&';
+      params += 'st1='+ shippingTypeChange[0].val + '&';
+      params += 'st2='+ shippingTypeChange[1].id + '&';
+      params += 'st3='+ shippingTypeChange[1].val + '&';
+    } else {
+      console.log("SAME");
+    }
+
+    var addressType = 0;
+    var addressTypeRadio = document.getElementsByName('addressType');
+    console.log ("FOUND: " + addressTypeRadio[i]);
+    for (var i=0; i < addressTypeRadio.length; i++) {
+        if (addressTypeRadio[i].checked) {
+          addressType = addressTypeRadio[i].value;
+          break;
+        }
+    } // for loop
+    params += 'addressType='+ addressType + '&';
+
+    // if params is different (changed) from the initial state and the number of addresses is > 1
+    // need to update (shipping and/or billing) addresses
+
+    if (sbForm.curID>-1) {
+      var url = 'assignment-04.php?fn=17&id='+sbForm.curID+'&' + params + '&';
+    } else {
+      var url = 'assignment-04.php?fn=15&id='+customerID+'&' + params + '&';
+    }
+    console.log(url);
+    goCrud(url, true, 0); // change to , 2); later
+
+  } // END: function goAddRec_addr()
+
+
+  function goNew() {
+      var rcMenuElement = document.getElementById("popUp1");
+      var tt = "<div id=\"popUp1\"><table><tbody><tr><td>Title: </td><td><input id=\"f0\"></td></tr>";
+      tt += "<td>Firstname: </td><td><input id=\"f1\"></td></tr>";
+      tt += "<td>Surname: </td><td><input id=\"f2\"></td></tr>";
+      tt += "<td>Email: </td><td><input id=\"f3\"></td></tr>";
+      tt += "<td>Mobile: </td><td><input id=\"f4\"></td></tr>";
+      tt += "<td>&nbsp;</td><td><button onclick=\"goAddRec();\">ADD</button></td></tr>";
+      tt += "</tbody></table></div>";
+      rcMenuElement.innerHTML = tt;
+        rcMenuElement.style.display = "block"; 
+  } // END: function goNew()
+
+
+  function showPopup(showHide,n,setIDB) {
+    document.getElementById("popUp"+n).style.display = (showHide) ? "block" : "none";
+    if (setIDB) {
+      inDialogueBox = showHide;
+    }
+  }
+
+  function setAF(n) {
+    sbForm.now=n;
+    console.log("sbForm: " + JSON.stringify(sbForm));
+  }
+
+  function updateSbForm(row) {      // Finds S&B info for a record
+
+    sbForm = {sabID:-1,sID:-1,bID:-1,stCurRecBefore:0,stCurRecNow:0, curID:-1};
+
+    if (row>-1 && tableData[row].hasOwnProperty('Address')) {
+      var addressCount = tableData[row].Address.length;
+    } else {
+      return 0;
+    }   
+
+        // find ship and bill address IDs (in case they have to be updated)
+        if (addressCount===1) {
+        sbForm.sabID = [tableData[row].Address[0].addressID];
+      } else {
+        for (var i=0; i<addressCount; i++) {
+          if (tableData[row].Address[i].addressType==1) { // shipping and billing
+            sbForm.sabID = tableData[row].Address[i].addressID;
+            break;
+          } else if (tableData[row].Address[i].addressType==2) { // shipping
+            sbForm.sID = tableData[row].Address[i].addressID;
+          } else if (tableData[row].Address[i].addressType==3) { // shipping
+            sbForm.bID = tableData[row].Address[i].addressID;
+          }
+        } // for loop
+      } 
+      return addressCount;
+  } // END: function updateSbForm()
+
+
+  function goNew_addr(customerID, row,addressRow) {      // DISPLAYS "EDIT / NEW ADDRESS" FORM
+
+    var title, isNew;
+  
+    var addressCount = updateSbForm(row);
+    updateLastCellEdited(true,-1,-1);
+
+    console.log("######  goNew_addr: customerID:" + customerID + ", row:" + row + ", addressRow: " + addressRow);
+
+    if (addressRow>-1) {
+      title = 'Edit';
+      isNew = false;
+      console.log("FFF: " + row + ", " + addressRow);
+      console.log(tableData[row].Address[addressRow].Eircode);
+      var f=[tableData[row].Address[addressRow].addressID, tableData[row].Address[addressRow].Line1, tableData[row].Address[addressRow].Line2,
+      tableData[row].Address[addressRow].Town,tableData[row].Address[addressRow].County,tableData[row].Address[addressRow].Eircode,
+      tableData[row].Address[addressRow].addressType];
+    } else {
+      var f=[-1,'','','','','',0];
+      title = 'Add';
+      isNew = true;
+      addressCount++;
+      console.log("********* F0 NOT SET" + f[0]);
+    }
+
+    sbForm.curID = f[0];
+    console.log("#################F0 SET" + f[0]);
+    console.log("NEW AD:" + customerID);
+    var rcMenuElement = document.getElementById("popUp1");
+    var tt = "<div id=\"popUp1\"><div class=\"topBar\"><span>"+title+" Address:</span><span style=\"float:right;\"><button onclick=\"showPopup(false,1,true);\">x</button></span></div>";
+    tt += "<table><tbody><tr><td>Line 1: </td>";
+    tt += "<td><input id=\"address-line1\" value=\""+f[1]+"\"></td></tr>";
+    tt += "<tr><td>Line 2: </td><td><input id=\"address-line2\" value=\""+f[2]+"\"></td></tr>";
+    tt += "<tr><td>Town: </td><td><input id=\"town\" value=\""+f[3]+"\"></td></tr>";
+    tt += "<tr><td>County: </td><td><input id=\"county\" value=\""+f[4]+"\"></td></tr>";
+    tt += "<tr><td>Eircode: </td><td><input id=\"postal-code\" value=\""+f[5]+"\"></td></tr>";
+
+    if (addressCount<2 || f[6]==1) {
+      f[6] = 1; // only one address - must be both shipping and billing  
+    }
+
+    console.log(" f[6]:"+  f[6]);
+    sbForm.before = f[6];
+
+    tt += "<tr><td colspan=\"100%\"><table><tbody><tr><td class=\"sabToggle\"><input type=\"radio\" onchange='setAF(1);' name=\"addressType\" id=\"st1\" value=\"1\"><label for=\"male\">Shipping &#38; Billing</label></td>";
+    tt += "<td class=\"sabToggle\"><input onchange='setAF(2);' type=\"radio\" name=\"addressType\" id=\"st2\" value=\"2\"><label for=\"shipping\">Shipping</label></td>";
+    tt += "<td class=\"sabToggle\"><input onchange='setAF(3);' type=\"radio\" name=\"addressType\" id=\"st3\" value=\"3\"><label for=\"billing\">Billing</label></td></tr></tbody></table></td></tr>";
+    tt += "<tr><td></td><td><button onclick=\"goAddRec_addr("+customerID+");\">"+title+"</button></td></tr>";
+    tt += "</tbody></table></div><div id=\"validateMessage\"></div>";
+    rcMenuElement.innerHTML = tt;
+    setPos(rcMenuElement);
+      
+    // TODO: Must improve this: (POSITION ON SCREEN OF DIALOGUE BOX, mustn't go off the edge!)
+    var eventX = event.pageX;
+    if (eventX>600) eventX-=200;
+    rcMenuElement.style.left = eventX;
+    rcMenuElement.style.top = event.pageY;
+    // ---------------------------------------------
+      
+    rcMenuElement.style.display = "block";
+    inDialogueBox = true;
+    if (f[6]>0) {
+      document.getElementById("st"+f[6]).checked = true;
+      sbForm.now = f[6];
+    }
+    if (addressCount<2 || f[6]==1) {
+      document.getElementById("st2").disabled = true; 
+      document.getElementById("st3").disabled = true; 
+    }
+    if (f[6]==2) {
+      document.getElementById("st3").disabled = true; 
+    } else if (f[6]==3) {
+      document.getElementById("st2").disabled = true; 
+    }
+    console.log("sbForm: "+ JSON.stringify(sbForm) );
+
+  } // END: function goNew_addr()
+
+
+  function getWindowWidth() {
+      return Math.max(document.documentElement.clientWidth, document.documentElement.scrollWidth,
+        document.body.offsetWidth, document.documentElement.offsetWidth,
+        document.body.scrollWidth);
+  }
+
+  function getWindowHeight() {
+    return Math.max(document.documentElement.clientHeight, document.body.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight,
+      document.documentElement.scrollHeight);
+  }
+
+  function setPos(element) {
+    elRect = {width: 260, height: 330};
+  
+    // console.log(document.getElementById('id').getBoundingClientRect())
+
+    var scrollLeft = (window.pageXOffset !== undefined) ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+    var scrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+
+    var eventX = event.pageX;
+    var eventY = event.pageY;
+    var windowWidth = document.documentElement.clientWidth;
+    var windowHeight = document.documentElement.clientHeight;
+
+    console.log(eventX + " - " + eventY);
+
+    element.style.left = eventX;
+    element.style.top = eventY;
+
+
+  } // END: function setPos()
+
+
+
+  function toggleAddr(i) {      // Toggles addresses column
+    addrToggles[i] = !(addrToggles[i]);
+    updateLastCellEdited(false,-1,-1);
+    printTable();
+  }
+
+
+  function getAddress(row,addressRow) {
+    var i4, colKey;
+    returnVal = "";
+
+    for (i4=1; i4<6; i4++) {
+          colKey = Object.keys(tableData[row].Address[0])[i4];
+          returnVal += tableData[row].Address[addressRow][colKey];
+          if (i4<5 && tableData[row].Address[addressRow][colKey].length > 0) {
+            returnVal += ", ";
+          }
+    }
+    return returnVal;
+
+  } // END: function getAddress()
+
+
+  function printAddress(row,addressRow) {
+    var colKey;
+    var tData = getAddress(row,addressRow);
+    return "<td onclick=\"goNew_addr("+tableData[row].customerID+","+row+","+addressRow+");\" "+ilst+" id=\"a"+addressRow+"_"+row+"\">" + tData + " </td>";
+
+  } // END: function printAddress()
+
+
+  function printAddressCol(i) {        // generates the address column
+    var cTable ="<td id=\"addr"+i+"\"";
+    var i3,i4;
+    if (tableData[i].Address.length>0) {
+      cTable +=" class=\"tr_sm\" onclick=\"toggleAddr("+i+");\">"+(addrToggles[i] ? "<button> x </button>" : "&#x2193;");
+      cTable +="</td></tr>";
+      // --------------------------------------------------------------------
+      if (addrToggles[i]) {
+        cTable += "<tr>";
+        cTable +="<td colspan='7'>";
+        cTable +="<table class=\"addressTable\"><tbody>";
+        for (i3=0; i3<tableData[i].Address.length; i3++) {
+          cTable +="<tr class=\"adr_lab\"><td "+ilst2+" width=\"7px\" colspan=\"1\" style=\"font-size: 8px;\" ";
+          cTable += "onclick=\"goDelAddr_prompt("+i+","+i3+");\"> DELETE </td>";
+          cTable +="<td "+ilst+">&nbsp;</td>";
+          cTable +="<td "+ilst+">&nbsp;</td><td "+ilst2+" width=\"7px\" style=\"font-size: 8px;\" ";
+          cTable += " onclick=\"goNew_addr("+tableData[i].customerID+","+i+","+i3+");\"> EDIT </td><td "+ilst+">&nbsp;</td>";
+          cTable +="<td "+ilst+">&nbsp;</td><td "+ilst2+" width=\"7px\" style=\"font-size: 8px;\" ";
+          cTable += "> "+addressTypes[tableData[i].Address[i3].addressType]+" </td><td "+ilst+">&nbsp;</td>";
+          cTable += printAddress(i, i3);
+          cTable += "</tr>";
+        } // for loop
+          
+        cTable += "</tbody></table></td>";
+        cTable += "<td "+ilst2+" width=\"7px\" style=\"font-size: 8px;\" ";
+        cTable += "onclick=\"goNew_addr("+tableData[i].customerID+","+i+",-1);\"> NEW </td>";
+        cTable +="</tr>";
+
+      } // end show addresses
+    } else {      // no addresses
+                  // --------------------------------------------------------------------
+      if (tableData[i].customerID>-1) {
+        cTable +=" class=\"tr_sm\" onclick=\"goNew_addr("+tableData[i].customerID+","+i+",-1);\">Add Address</td>";
+      } else {
+        cTable +=" class=\"tr_sm\"> - </td>";
+      }
+      cTable +="</tr>";
+    }            // END: no addresses
+
+    return cTable;
+
+  } // END: printAddressCol()
+
+  function goInit() {
+    document.getElementById("statText").textContent = '';
+    goCrud('assignment-04.php?fn=start&', true, 0);
+  }
+
+  function printTable() {       // Generates the entire Customers table
+
+    var cTable = "<table class=\"flexiTable\"><tbody>";
+    var i, ii;
+    var colKey;
+    console.log(tableData.length);
+    if (tableData.length<1) {
+      var noDataTxt = "<div>The table is empty.";
+        if (document.getElementById("statText").textContent.length<1) {
+          noDataTxt += "</div><span style=\"cursor:pointer; color: blue;\" onclick=\"insertRow(-1,false, true);\">Add a row</span>.";
+        } else {
+          noDataTxt += "</div><span style=\"cursor:pointer; color: blue;\" onclick=\"goInit();\">Initialise Database</span>.";
+        }
+
+      document.getElementById("dynamicTable").innerHTML = noDataTxt;
+      return;
+    }
+    cTable += "<tr><th>&nbsp;</th>";
+    for (ii=0; ii<numCols; ii++) {
+        cTable +=  "<th>" + Object.keys(tableData[0])[ii] + "</th>";
+    }
+    cTable +="<th>ADR</th>";
+    cTable += "</tr>";
+
+    for (i=0; i<tableData.length; i++) {
+      cTable +="<tr>";
+      cTable +="<td onclick='goDel_prompt("+tableData[i].customerID+");'>DEL</td>";
+      cTable +="<td id=\"r"+i+"c0\">"+ tableData[i].customerID + "</td>";
+      for (ii=1; ii<numCols; ii++) {
+          cTable += printCell(i,ii);
+      }
+      cTable += printAddressCol(i);
+    } // FOR loop
+    console.log(tableData);
+    cTable += "</tbody></table";
+    document.getElementById("dynamicTable").innerHTML = cTable;
+
+  } // END: function printTable()
+
+
+function setAT() {
+  addrToggles = new Array(tableData.length);
+}
+
+  function updateTable(json) {
+    console.log("REFRESH " + doRefresh);
+    if (json.length > 0) {
+      try {
+        tableData = JSON.parse(json);
+      } catch (e) {
+        console.log('BACK: ' + json);
+        document.getElementById('statText').innerHTML = json;
+      }
+    } else {
+      tableData = [];
+    }
+
+    setAT();
+    printTable();
+
+  } // END: function updateTable()
+
+function hidePopups() {
+  showPopup(false,1,false);
+  showPopup(false,2,false);
+}
+
+function crudBack() {
+    if (this.readyState == 4 && this.status == 200) {
+            const json = this.responseText; 
+            document.getElementById('statText').textContent = '';
+            if (doRefresh) {
+              updateTable(json);
+            }
+
+            hidePopups();
+    }
+} // END: crudBack()
+
+function crudEditBack() {
+
+    if (this.readyState == 4 && this.status == 200) {
+      const json = this.responseText; 
+      if (!isNaN(json) && json!=='') {
+        console.log("NEW ID: '" + json + "' CELL: " + curWaitForID);
+        var colKey = Object.keys(tableData[curWaitForID])[0];
+        console.log("BEFORE:" + tableData[curWaitForID][colKey]);
+        console.log("CC:" + colKey);
+        tableData[curWaitForID][colKey] = json;
+        console.log("AFTER:" + tableData[curWaitForID][colKey]);
+
+        refreshCell(curWaitForID,0);
+        document.getElementById("addr"+curWaitForID).outerHTML = printAddressCol(curWaitForID);
+
+          console.log(tableData[curWaitForID].customerID);
+
+        curWaitForID = -1;
+      } else {
+        console.log("OTHER: " + json);
+        if (doRefresh) {
+          updateTable(json);
+        }
+      }
+
+      hidePopups();
+    }
+
+} // END: crudEditBack()
+
+
+  function crudEditAddrBack() {
+    if (this.readyState == 4 && this.status == 200) {
+      const json = this.responseText; 
+      if (!isNaN(json) && json!=='') {
+        console.log("NEW ID: '" + json + "' CELL: " + curWaitForID);
+        var colKey = Object.keys(tableData[curWaitForID])[0];
+        console.log("BEFORE:" + tableData[curWaitForID][colKey]);
+        console.log("CC:" + colKey);
+        tableData[curWaitForID][colKey] = json;
+        printTable();
+        curWaitForID = -1;
+      } else {
+        console.log("OTHER: " + json);
+        if (doRefresh) {
+          updateTable(json);
+        }
+      }
+    hidePopups();
+    }
+
+  } // END: crudEditAddrBack()
+
+
+function goCrud(param, refresh, isEdit) {
+console.log("CRUD: " + param);
+    doRefresh = refresh;
+    var xmlhttp = new XMLHttpRequest();
+        if (isEdit==0) {
+          xmlhttp.onreadystatechange = crudBack;
+        } else if (isEdit==1) {
+          xmlhttp.onreadystatechange = crudEditBack;
+        } else if (isEdit==2) {
+          xmlhttp.onreadystatechange = crudEditAddrBack;          
+        }
+
+//        document.getElementById("result2").innerHTML = "Getting...";
+        xmlhttp.open("GET", param, true);
+        xmlhttp.send();
+
+} // END: function goCrud()
+
+function goMouseOver() {
+
+}
+
+function huntNextCell(event, row, col, direction) {       //  hunt next available cell for editing
+
+// DIRECTION = UP DOWN LEFT RIGHT
+var foundCell = false;
+var x = col;
+var y = row;
+
+
+
+if (direction === UP) {
+  do {
+    if (y > 0) {  
+      y--;
+    } else {
+      y = tableData.length - 1;
+    }
+
+      foundCell = true;
+
+  } while (!(foundCell || (x == col && y == row)));  // avoid infinte loop! 
+
+} else if (direction === DOWN) {
+  do {
+    if (y < tableData.length - 1) {  
+      y++;
+    } else {
+      y = 0;
+    }
+
+      foundCell = true;
+
+  } while (!(foundCell || (x == col && y == row)));  // avoid infinte loop! 
+
+}
+
+
+/// ###########################
+
+if (direction === RIGHT) {
+  do {
+
+    if (x < (numCols - 1)) {  // cant edit last cell
+      x++;
+    } else {
+      x = 1;               
+      if (y < (tableData.length - 1)) {
+        y++;
+      } else {
+        y = 0;
+      }
+    }
+
+      foundCell = true;
+
+  } while (!(foundCell || (x == col && y == row)));  // avoid infinte loop! 
+
+} else if (direction === LEFT) {
+  do {
+
+    if (x > 1) {  // cant edit last cell
+      x--;
+    } else {
+      x = (numCols - 1);
+      if (y > 0) {
+        y--;
+      } else {
+        y = (tableData.length - 1);
+      }
+    }
+
+      foundCell = true;
+
+  } while (!(foundCell || (x == col && y == row)));  // avoid infinte loop! 
+
+}
+
+
+if (foundCell) {
+  goMouseDown(event, y, x);
+} else {
+  editingCell = false;
+}
+
+
+} // END: function huntNextCell()
+
+function printCell(row, col) {
+
+var colKey = Object.keys(tableData[row])[col];
+
+var cellData = tableData[row][colKey];
+var styleAlign = 0;
+var styleType = 0;
+
+if (row>-1) {
+    styleAlign = 1; // left align
+
+if (cellData == "-") {
+  cellData = placeHolder[col];
+  styleType = 3;
+  styleAlign = 2; // center align
+}
+
+if (selectedRow === row || selectedCol === col) {
+  styleType++;
+  if (selectedRow === row && selectedCol === col) {
+    styleType++;
+  }
+
+  if (selectedRow===row && col<2) {
+    if (styleType!==4)
+        styleType = 2;
+//          else
+//            styleType = 3;
+}
+
+
+
+}
+
+return "<td class=\"t" + styleType + "\" Style=\"" + alignText[styleAlign] + "\" id=\"r" + row + "c" + col + "\" onclick=\"goMouseDown(event," + row + "," + col + ");\" onmouseover=\"goMouseOver(" + row + "," + col + ");\" onmouseup=\"rcUP(event);\" onmousedown=\"goMouseDown(event," + row + "," + col + ");\">" + cellData + "</td>";
+// return "<td class=\"t" + styleType + "\" Style=\"" + alignText[styleAlign] + "\" id=\"r" + row + "c" + col + "\" onclick=\"goMouseDown(event," + row + "," + col + ");\" onmouseover=\"goMouseOver(" + row + "," + col + ");\" onmouseup=\"rcUP(event);\" onmousedown=\"goMouseDown(event," + row + "," + col + ");\">" + cellData + "</td>";
+
+
+} else {
+  
+  cellData = tableData[row][colKey];
+  styleType = (selectedCol===col) ? 2 : 10;
+  return "<th class=\"t" + styleType + "\" Style=\"" + alignText[styleAlign] + "\" id=\"r" + row + "c" + col + "\" onmouseover=\"goMouseOver(0,"+col+");\" onmousedown=\"goMouseDown(event,0," + col + ");\">" + cellData + "</th>";
+}
+
+
+
+} // END: function printCell()
+
+
+function rcUP(event) {
+  event.preventDefault();
+}
+
+
+function refreshCell(row,col) {
+//      document.getElementById("_r"+row+"c"+col).blur();
+      document.body.style.cursor ="";
+      document.getElementById("r"+row+"c"+col).outerHTML = printCell(row,col);
+    }
+
+function setCell(cT, row, col) {
+  title.other = false;
+
+  var acDif = 0;
+  var newCell;
+
+  if (row === 0) {
+    newCell = cT;
+  } else {
+    newCell = cT; // validate(cT.textContent, col);
+  }
+  var colKey = Object.keys(tableData[row])[col];
+  //var cellData = tableData[row][colKey];
+  if ( newCell !== placeHolder[col] && tableData[row][colKey] != newCell) {
+
+   // rememberChange(row, col, tableData[row][col], newCell, acDif); // FOR UNDO
+   tableData[row][colKey] = newCell;
+   var id = tableData[row][Object.keys(tableData[row])[0]];
+   if (isNaN(id)) { id = -1; curWaitForID = row; }
+   var crudURL = 'assignment-04.php?fn=9&id='+ id +
+   '&col='+colKey+'&data='+newCell+'&';
+   console.log(crudURL);
+   goCrud(crudURL, false, 1);
+
+  }
+}
+
+function goKeyUp(event, row, col) {
+
+var rePrint = false;
+var newCell;
+
+lastEvent = event;
+if (event.keyCode === 13 || event.keyCode === 9 || event.keyCode === 39 || event.keyCode === 37 || event.keyCode === 38 || event.keyCode === 40) { // CR or TAB
+  event.preventDefault();
+
+
+    setCell(event.currentTarget.textContent, row, col);
+
+
+  const element = document.getElementById("r" + row + "c" + col);
+
+  rePrint = true;
+  editingCell = false;
+} else if (event.keyCode === 27) { // ESCAPE KEY
+  event.preventDefault();
+  editingCell = false;
+  rePrint = true;
+} else if (event.keyCode === 46) { // DELETE KEY
+  editingCell = false;
+  //console.log("DELETE-KEY");
+  event.preventDefault();
+
+  // ############################### 
+
+  const currentTarget = event.currentTarget;
+  newCell = ""; //validate("", col);
+
+  if (tableData[row][Object.keys(tableData[row])[col]] !== newCell) {
+   // rememberChange(row, col, tableData[row][col], newCell, acDif);
+
+    tableData[row][Object.keys(tableData[row])[col]] = newCell;
+  }
+  // ###############################
+  rePrint = true;
+}
+if (rePrint) {
+  refreshCell(row, col);
+
+  currentEdit = [];
+}
+
+if (event.keyCode === 9 || event.keyCode === 39) {
+
+  huntNextCell(event, row, col, RIGHT);
+} else if (event.keyCode === 37) {
+  huntNextCell(event, row, col, LEFT);
+} else if (event.keyCode === 38) {
+  huntNextCell(event, row, col, UP);
+} else if (event.keyCode === 40) {
+  huntNextCell(event, row, col, DOWN);
+}
+
+} // END: function goKeyUp()
+
+
+function updateLastCellEdited(rePrint,row,col) {
+      var newCell = "";
+      editingCell = false;
+      if (currentEdit.length > 0) {
+        if ((currentEdit[0] !== row) || (currentEdit[1] !== col)) { // if we are on this cell do nothing
+          if (title.editing) {
+            leaveTitleCell(-1);
+            return;
+          }
+          var colKey = Object.keys(defaultRow)[currentEdit[1]];
+          var input_Box = document.getElementById("inputBox2");
+          if (input_Box!==null) {
+                newCell = input_Box.textContent;
+          }
+          console.log("CE0: " + currentEdit[1]);
+          console.log("OKY: " + colKey);
+          console.log("DDD: " + newCell + " vs " + placeHolder[currentEdit[1]] + " ; " + colKey);
+          if (newCell.length>0 && newCell!== placeHolder[currentEdit[1]] && (col!==1 && newCell!=='Other')) {
+            console.log("2:"+ tableData[currentEdit[0]][colKey] + "!==" + newCell );
+           if ( tableData[currentEdit[0]][Object.keys(tableData[currentEdit[0]])[currentEdit[1]]] != newCell) { // if the cell is changed
+//                rememberChange(currentEdit[0],currentEdit[1],tableData[currentEdit[0]][currentEdit[1]],newCell,acDif);
+// egg 
+tableData[currentEdit[0]][colKey] = newCell;
+
+console.log("CHANGE: " + tableData[currentEdit[0]][Object.keys(tableData[currentEdit[0]])[currentEdit[1]]]);
+console.log("ID:... " + Object.keys(tableData[0])[0]);
+var id = tableData[currentEdit[0]][Object.keys(tableData[0])[0]];
+  console.log("ID: " + id);
+  if (isNaN(id)) { id = -1; curWaitForID = row; }
+   var crudURL = 'assignment-04.php?fn=9&id='+id+'&col='+colKey+'&data='+newCell+'&';
+   console.log(crudURL);
+   goCrud(crudURL, false, 1);
+
+          }
+
+
+            }
+
+            if (rePrint) {
+              refreshCell(currentEdit[0],currentEdit[1]);
+              
+            }
+
+            currentEdit = [];
+
+            //updateTable(); // replace with refresh averages
+        }
+
+      }
+    }
+
+
+function goCell(row, col, editAnyway) {               // NB: Important - a cell is clicked
+      event.preventDefault();
+
+      //rcMenu(HIDE, 0);
+
+      const element = document.getElementById("r" + row + "c" + col);
+
+      updateLastCellEdited(true, row, col);
+
+        editingCell = true;
+
+        var cellData, place_Holder = '';
+        //console.log("E:" + row + "," + col);
+        if (element.value !== '') {
+          editingEmptyCell = false;
+          cellData = element.textContent;
+        } else {
+          editingEmptyCell = true;
+          cellData = "";
+          place_Holder = "placeholder=\"Enter Data \" ";
+        }
+
+
+        if (col==1 && !title.other) {
+        //  return;
+
+        console.log("ON ROW 0");
+        cellData = element.textContent;
+        console.log("'"+element.textContent+"'");
+        var iTitle = titleList.indexOf(cellData);
+        if (iTitle>-1) {
+          console.log("IT: " + iTitle);
+          title.val = iTitle;
+          element.innerHTML = 
+//          "<div style=\"color:black;\" contenteditable=\"true\" id=\"title0\" onkeydown=\"goKeyUp(event," + row + "," + col + ");\">" + cellData + "</div>";
+          "<div class=\"titleField_selected\" id=\"title0\" onclick=\"goTitle(true)\">"+titleList[title.val]+"</div>";
+          title.editing = true;
+          editingCell = false;
+          currentEdit = [row, col];
+          return;
+        } else {
+          console.log("Other: " + element.value);
+        }
+
+        }
+
+        currentEdit = [row, col];
+        var cellData = element.textContent;
+
+    
+        var e1 = element.getBoundingClientRect();
+
+        element.innerHTML = "<div style=\"color:black;\" contenteditable=\"true\" id=\"inputBox2\" onkeydown=\"goKeyUp(event," + row + "," + col + ");\">" + cellData + "</div>";
+        var element3 = document.getElementById("inputBox2");
+        //element3.focus();
+        element.style.padding = "3px";
+        element.style.background = "white";
+        element.style.border = "black solid 4px";
+        var range = document.createRange();
+        range.selectNodeContents(element3);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+         sel.addRange(range);
+
+
+    } // END: function goCell()
+
+    function goMouseDown(event,row,col) {
+
+var rightButton = false;
+if ("which" in event)  // Chrome, Safari, Firefox & Opera
+   rightButton = event.which == 3; 
+ else if ("button" in event)  // IE, Opera 
+   rightButton = event.button == 2;
+
+if (rightButton) {
+
+  goRightClick(row,col);
+} else {
+
+
+      goCell(row, col,false);
+
+//    if (row===0 || col===0 && !editingCell) {
+//      if (col<tableData[0].length-1)
+//          document.body.style.cursor = "grab"; 
+//    }
+
+}
+
+
+}  
+
+
+function onLoadFunction() {
+  crudRefresh();
+}
+
+function crudRefresh() {
+  var url = 'assignment-04.php?fn=6&';
+    if (searchTerms.word!=='') {
+      url += 'searchWord=' + searchTerms.word +'&';
+      url += 'searchColumn=' + searchTerms.column +'&';
+    }
+    goCrud(url, true, 0);
+}
+
+function changeSearchTerms() {
+  updateLastCellEdited(false,-1,-1);
+  searchTerms.column = document.getElementById('searchColumn').value;
+  searchTerms.word = document.getElementById('searchWord').value;
+  console.log('TERMS:' + JSON.stringify(searchTerms));
+  crudRefresh();
+}
+
+function printTitle() {
+  var sText = (title.editing) ? "_selected" : "";
+  document.getElementById('title0').outerHTML=
+  "<div class=\"titleField"+sText+"\" id=\"title0\" onclick=\"goTitle(true)\">"+titleList[title.val]+"</div>";
+}
+
+function goTitle(showTitle) {
+  title.editing = showTitle;
+  printTitle();
+}
+
+function toggleTitle(decInc) {
+  title.val+=decInc;
+  if (title.val>=titleList.length) title.val = 1;
+  if (title.val<1) title.val = titleList.length-1;
+  printTitle();
+}
+
+  function leaveTitleCell(directionAfter) {
+    if (title.editing) {
+
+      console.log("TE: " + JSON.stringify(title));
+      if (title.val == (titleList.length - 1)) {
+        console.log("OTHER....")
+      } else {
+        console.log("MR, MRS, ETC. - LEFT " + JSON.stringify(currentEdit));
+        setCell(titleList[title.val], currentEdit[0], currentEdit[1]);
+        console.log("CELL IS SET -  " + JSON.stringify(currentEdit));
+
+      }
+      refreshCell(currentEdit[0], currentEdit[1]);
+      if (directionAfter>-1) {
+        huntNextCell(event, currentEdit[0], currentEdit[1], directionAfter);
+      }
+
+    } else { }
+
+  } // END: function leaveTitleCell()
+
+function checkKey() {
+  if (inDialogueBox) return;
+      //console.log("KC: " + event.keyCode + " EC: " + editingCell + " : " + (event !== lastEvent) );
+      if (!editingCell && event !== lastEvent) {
+        //console.log(event.keyCode);
+
+        if (event.keyCode == 46) {
+//              deleteColsorRows(false);
+        } else if (event.keyCode == 45) {  //insertSelectedRows
+//          insertColsorRows();
+        }
+        else if (event.keyCode == 38) {  // UP
+          event.preventDefault();
+          if (title.editing) {
+            toggleTitle(-1);
+          } else {
+            //        setSelectedRow(selectedRow - 1);
+          }
+
+        }
+        else if (event.keyCode == 40) {  // DOWN
+          event.preventDefault();
+          if (title.editing) {
+            toggleTitle(1);
+          } else {
+          //          setSelectedRow(selectedRow + 1);
+          }          
+
+
+        }
+        else if (event.keyCode == 37) {  // LEFT
+          event.preventDefault();
+          leaveTitleCell(LEFT);
+        }
+        else if (event.keyCode == 39 || event.keyCode == 9) {  // RIGHT
+          event.preventDefault();
+          leaveTitleCell(RIGHT);
+        }
+        else if (event.keyCode == 13) {  // ENTER
+          event.preventDefault();
+          if (title.editing) {
+
+            console.log("TE: " + title.other);
+            if (title.val==(titleList.length-1)) {
+              console.log("OTHER....")
+              title.other = true;
+              goCell(currentEdit[0],currentEdit[1],true);
+              
+            } else {
+              console.log("MR, MRS, ETC.")
+              setCell(titleList[title.val], currentEdit[0], currentEdit[1]);
+              refreshCell(currentEdit[0], currentEdit[1]);
+            }
+
+          } else {
+                  if (selectedRow >-1) {
+                  if(selectedCol>-1)
+                    goCell(selectedRow,selectedCol,false);
+                  else
+                    huntNextCell(event, selectedRow, -1, RIGHT);
+      //              goCell(selectedRow,2);
+                } else if(selectedCol>-1)
+                    goCell(1,selectedCol);
+                }
+
+        }
+        else if (event.keyCode == 27) {  // ESC
+          event.preventDefault();
+          if (title.editing) {
+            refreshCell(currentEdit[0], currentEdit[1]);
+            title.editing = false;
+          } else {
+            //        setSelectedRow(selectedRow - 1);
+          }
+          
+//          if (selectedRow >-1)
+//            hilightRow(-1);
+//          else if(selectedCol>-1)
+//            hilightCol(-1);
+        }
+      }
+      if (event.ctrlKey) {
+          if (event.keyCode == 90) {  //ctrl-z - undo
+            // call undo function
+            undoLastEdit();
+          } else if (event.keyCode == 89) {  //ctrl-y - redo
+            // call redo function
+            redoLastEdit();
+          }
+      }
+//       if (event.keyCode == 9) { // tab key
+//        event.preventDefault();
+//      }
+
+    } // END: function checkKey()
+
+    function loadDB(fileName) {
+      fetch(fileName)
+  .then(response => response.text())
+  .then(text => console.log(text))
+  // outputs the content of the text file
+    }
+
+    function loadSQL1() {
+
+      fileName = document.getElementById('SQL_loader').files[0];
+
+      console.log("LOADER: ");
+      console.log("FN: " + fileName.name );
+//      console.log("NOW LOAD...");
+      //loadDB(fileName);
+    }
+
+    function loadDatabase(evt) {
+      var file = event.target.files[0];
+  
+        console.log("TYPE: " + file.type);
+          if (!file.type.match('text.*')) console.log("TEXT");
+
+        var reader = new FileReader();
+  
+        reader.onload = (
+            function(theFile) {
+              return function(e) {
+                  testLoad(e.target.result);
+               };
+              }
+          )(file);
+  
+        reader.readAsText(file);
+    }
+
+
+    function testLoad(data) {
+        var xmlhttp = new XMLHttpRequest();
+
+          xmlhttp.onreadystatechange = crudBack;
+
+        xmlhttp.open("POST", 'assignment-04.php?fn=load&', true);
+        xmlhttp.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        xmlhttp.send(data);
+
+} // END: function testLoad()
+
+</script>
+</head>
+<body onload="onLoadFunction();" onkeydown="checkKey();">
+  
+  <span>
+
+  </span>
+    <div class="topMenu">
+      <table class="container">
+        <tbody>
+          <tr>
+            <td><span class="menuItem" onclick="insertRow(-1,false, true);">Add Row</span></td>
+            <td><span class="menuItem" onclick="goLoadDB_prompt();">Load Database</span></td>
+            <td><span class="menuItem" onclick="window.open('assignment-04.php?fn=dump2&');">SAVE (dump) DATABASE</span></td>
+            
+            <td><span class="menuItem" id="mi_ls" onclick="goCrud('assignment-04.php?fn=create&', true, 0);">Add Random Customer</span></td>
+            <td><span class="menuItem" onclick="goInit();">Initialise Database</span></td>
+            <td><span class="menuItem" onclick="goDropDB_prompt();">Drop Database</span></td>
+            <td><span class="menuItem"><a href="assignment-04.php?fn=6&" download="DB_JSON.JSON">Download JSON</a></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+      <div style="padding: 0px 0px 10px 10px;">
+        <input id="searchWord" placeholder="Search Word" size="10" onkeyup="changeSearchTerms()">
+        <label for="searchColumn" class="neatText" style="font-size: 10px;">Search by:</label>
+    
+    <select name="searchColumn" id="searchColumn" onchange="changeSearchTerms()">
+      <option value="">Show all</option>
+      <option value="Surname">Surname</option>
+      <option value="FirstNames">First Name</option>
+      <option value="Email">Email</option>
+      <option value="Mobile">Mobile</option>
+      <option value="Title">Title</option>
+    </select>
+      </div>
+
+    <div class="popUp" id="popUp1">P1</div>
+    <div class="popUp" id="popUp2">P2</div>
+
+    <div>
+        <span id="statText"></span>
+    </div>
+    <div id="dynamicTable"></div>
+
+</body>
+</HTML>
